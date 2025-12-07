@@ -67,8 +67,8 @@ def ansi_highlight(text: str, spans):
 
 
 def search_sonnet(sonnet: Sonnet, query: str) -> SearchResult:
-    title_raw = str(sonnet["title"])
-    lines_raw = sonnet["lines"] # list[str]
+    title_raw = str(sonnet.title)
+    lines_raw = sonnet.lines # list[str]
 
     q = query.lower()
     title_spans = find_spans(title_raw.lower(), q)
@@ -171,6 +171,7 @@ def fetch_sonnets_from_api() -> List[Sonnet]:
 
     # POETRYDB_URL already contains the URL
 
+
     try:
         response = urllib.request.urlopen(POETRYDB_URL)
         data = response.read()
@@ -200,13 +201,15 @@ def load_sonnets() -> List[Sonnet]:
     filepath = module_relative_path(CACHE_FILENAME)
     if os.path.exists(filepath):
         with open(filepath, "r", encoding="utf-8") as file:
-            sonnets = json.load(file)
+            raw_data = json.load(file)
+        sonnets = [Sonnet(data) for data in raw_data]
         print("Loaded sonnets from cache.")
         return sonnets
     else:
-        sonnets = fetch_sonnets_from_api()
+        raw_data = fetch_sonnets_from_api()
+        sonnets = [Sonnet(data) for data in raw_data]
         with open(filepath, "w", encoding="utf-8") as file:
-            json.dump(sonnets, file, indent=2, ensure_ascii=False)
+            json.dump(raw_data, file, indent=2, ensure_ascii=False)
         print("Downloaded sonnets from PoetryDB.")
         return sonnets
 
